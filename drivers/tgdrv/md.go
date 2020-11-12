@@ -21,6 +21,12 @@ import (
 // TGMarkdown is driver type of Markdown()
 const TGMarkdown = "TGMarkdown"
 
+// TGHTML is driver type of HTML()
+const TGHTML = "TGHTML"
+
+// TGPlain is driver type of Plain()
+const TGPlain = "TGPlain"
+
 func uri(token, ep string) (ret string) {
 	return "https://api.telegram.org/bot" + token + "/" + ep
 }
@@ -65,31 +71,78 @@ func Markdown(token string, dest map[string]int64, cl *http.Client) (ret types.D
 		return
 	}
 
-	ret = &md{
+	ret = &tgTxt{
 		token: token,
 		dest:  dest,
 		cl:    cl,
+		typ:   TGMarkdown,
+		parse: "MarkdownV2",
 	}
 
 	return
 }
 
-type md struct {
+// HTML creates a driver that send html formatted message in telegram
+//
+// The driver accepts string which is html formatted text.
+//
+// dest maps endpoint to chat/channel/user ids.
+func HTML(token string, dest map[string]int64, cl *http.Client) (ret types.Driver, err error) {
+	if err = validateToken(token, cl); err != nil {
+		err = errors.New("cannot validate telegram bot token: " + err.Error())
+		return
+	}
+
+	ret = &tgTxt{
+		token: token,
+		dest:  dest,
+		cl:    cl,
+		typ:   TGHTML,
+		parse: "HTML",
+	}
+
+	return
+}
+
+// Plain creates a driver that send plain text message in telegram
+//
+// The driver accepts string which is plain text.
+//
+// dest maps endpoint to chat/channel/user ids.
+func Plain(token string, dest map[string]int64, cl *http.Client) (ret types.Driver, err error) {
+	if err = validateToken(token, cl); err != nil {
+		err = errors.New("cannot validate telegram bot token: " + err.Error())
+		return
+	}
+
+	ret = &tgTxt{
+		token: token,
+		dest:  dest,
+		cl:    cl,
+		typ:   TGPlain,
+	}
+
+	return
+}
+
+type tgTxt struct {
 	token string
 	dest  map[string]int64
 	cl    *http.Client
+	parse string
+	typ   string
 }
 
-func (t *md) Type() (ret string) {
-	return TGMarkdown
+func (t *tgTxt) Type() (ret string) {
+	return t.typ
 }
 
-func (t *md) Verify(data []byte) (err error) {
+func (t *tgTxt) Verify(data []byte) (err error) {
 	_, err = t.extract(data)
 	return
 }
 
-func (t *md) extract(data []byte) (msg string, err error) {
+func (t *tgTxt) extract(data []byte) (msg string, err error) {
 	if len(data) == 0 {
 		err = errors.New("empty message")
 	}
@@ -98,7 +151,7 @@ func (t *md) extract(data []byte) (msg string, err error) {
 	return
 }
 
-func (t *md) Send(ep string, content []byte) (resp []byte, err error) {
+func (t *tgTxt) Send(ep string, content []byte) (resp []byte, err error) {
 	cid, ok := t.dest[ep]
 	if !ok {
 		err = errors.New("unsupported dest: " + ep)
@@ -113,7 +166,9 @@ func (t *md) Send(ep string, content []byte) (resp []byte, err error) {
 	val := url.Values{}
 	val.Set("chat_id", strconv.FormatInt(cid, 10))
 	val.Set("text", txt)
-	val.Set("parse_mode", "MarkdownV2")
+	if t.parse != "" {
+		val.Set("parse_mode", t.parse)
+	}
 
 	req, err := http.NewRequest(
 		"POST", uri(t.token, "sendMessage"),
