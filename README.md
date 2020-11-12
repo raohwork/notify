@@ -8,6 +8,15 @@ Creating a server is easy as
 4. Create a server with SenderOptions, and Register() your drivers
 5. Start(), enjoy it
 
+### Predefined binaries
+
+There're two predefined binaries here. Both enables httpdrv.* drivers by default. You can enable sendgriddrv.* / tgdrv.* by setting environment variables.
+
+The only difference between `notify-api` and `notify-api-pg` is database driver, fore one uses MySQL, the other uses PosgreSQL.
+
+There're [automated built Docker images](https://hub.docker.com/repository/docker/raohwork/notify/tags?page=1) on docker hub. Tag `latest` is for `notify-api` and `pg` for `notify-api-pg`.
+
+
 ### FAQ
 
 ##### This is not well tested.
