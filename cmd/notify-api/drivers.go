@@ -87,9 +87,9 @@ func setup(data map[string]string) {
 	x := make([]types.Driver, 0, 2)
 	if token, target := data[keyTGToken], data[keyTGTarget]; token != "" && target != "" {
 		d := initTG(token, target, cl)
-		if d != nil {
-			drvs++
-			x = append(x, d)
+		if l := len(d); l > 0 {
+			drvs += l
+			x = append(x, d...)
 		}
 	}
 
@@ -139,7 +139,7 @@ func initSendgrid(key string, cl *http.Client) (ret types.Driver) {
 	return sendgriddrv.New(key, cl)
 }
 
-func initTG(token, target string, cl *http.Client) (ret types.Driver) {
+func initTG(token, target string, cl *http.Client) (ret []types.Driver) {
 	token = strings.TrimSpace(token)
 	if len(token) == 0 {
 		return
@@ -166,10 +166,25 @@ func initTG(token, target string, cl *http.Client) (ret types.Driver) {
 	}
 
 	log.Print("telegram token and target detected, enabling tgdrv")
+	x := make([]types.Driver, 3)
+
 	d, err := tgdrv.Markdown(token, m, cl)
 	if err != nil {
 		log.Fatal("cannot init telegram driver: ", err)
 	}
+	x[0] = d
 
-	return d
+	d, err = tgdrv.HTML(token, m, cl)
+	if err != nil {
+		log.Fatal("cannot init telegram driver: ", err)
+	}
+	x[1] = d
+
+	d, err = tgdrv.Plain(token, m, cl)
+	if err != nil {
+		log.Fatal("cannot init telegram driver: ", err)
+	}
+	x[2] = d
+
+	return x
 }
