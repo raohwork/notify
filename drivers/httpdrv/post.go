@@ -5,18 +5,18 @@
 package httpdrv
 
 import (
-	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/raohwork/notify/types"
 )
 
 func FormPostMsg(val url.Values) (ret *PostMsg) {
 	ret = &PostMsg{
-		Body: []byte(val.Encode()),
+		Body: val.Encode(),
 	}
 	ret.Headers.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -29,7 +29,7 @@ func JSONPostMsg(i interface{}) (ret *PostMsg, err error) {
 		return
 	}
 	ret = &PostMsg{
-		Body: buf,
+		Body: string(buf),
 	}
 	ret.Headers.Set("Content-Type", "application/json")
 
@@ -39,9 +39,9 @@ func JSONPostMsg(i interface{}) (ret *PostMsg, err error) {
 // PostMsg defines driver specific parameters for HTTPPost()
 type PostMsg struct {
 	// additional header to send
-	Headers http.Header `json:"headers"`
+	Headers http.Header `json:"headers,omitempty"`
 	// post body
-	Body []byte `json:"body"`
+	Body string `json:"body,omitempty"`
 }
 
 // POST is driver type of HTTPPost()
@@ -90,7 +90,7 @@ func (d *postDrv) Send(ep string, data []byte) (resp []byte, err error) {
 		return
 	}
 
-	req, err := http.NewRequest("POST", ep, bytes.NewReader(msg.Body))
+	req, err := http.NewRequest("POST", ep, strings.NewReader(msg.Body))
 	if err != nil {
 		return
 	}
