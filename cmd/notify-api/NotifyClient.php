@@ -87,6 +87,25 @@ class NotifyClient
         return $this->send($id, '', 'SENDGRID', $options, $once);
     }
 
+    /**
+     * Notify server should not resend this. Every8d.com takes responsibility to
+     * resend SMS.
+     *
+     * @param $phone string +886987654321 or 0987654321, separates by comma
+     * @param $time string time to send SMS (YmdHis)
+     * @param $retry int valid time in minutes
+     */
+    public function smsav8d(string $id, string $phone, string $text, string $subject = '', string $time = '', int $retry = 0): bool
+    {
+        $data = [
+            'content' => $text,
+            'subject' => $subject,
+            'time' => $time,
+            'retry' => $retry,
+        ];
+        return $this->send($id, $phone, 'SMSAV8D', $data, true);
+    }
+
     public function resend(string $id): bool
     {
         try {

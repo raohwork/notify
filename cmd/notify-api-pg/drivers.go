@@ -17,6 +17,7 @@ import (
 	"github.com/raohwork/notify"
 	"github.com/raohwork/notify/drivers/httpdrv"
 	"github.com/raohwork/notify/drivers/sendgriddrv"
+	"github.com/raohwork/notify/drivers/smsav8d"
 	"github.com/raohwork/notify/drivers/tgdrv"
 	"github.com/raohwork/notify/model"
 	"github.com/raohwork/notify/model/pgsqldrv"
@@ -35,6 +36,8 @@ const (
 	keyDSN         = "DSN"
 	keyMaxTry      = "MAX_TRY"
 	keyThreads     = "THREADS"
+	keyAV8DUser    = "AV8D_USER"
+	keyAV8DPass    = "AV8D_PASS"
 )
 
 var bind string
@@ -47,6 +50,8 @@ func init() {
 	m.Want(keyTGToken, "telegram token", "")
 	m.Want(keyTGTarget, "telegram targets", "chan1=-100123781523,chan2=-100129386128736")
 	m.Want(keySendgridKey, "sendgrid api key", "")
+	m.Want(keyAV8DUser, "user name of every8d", "")
+	m.Want(keyAV8DPass, "password of every8d", "")
 	m.May(keyHTTPBind, "api server bind address", ":8080")
 	m.May(keyMaxTry, "retry at most these times", "6")
 	m.May(keyThreads, "goroutines to send notification", "10")
@@ -91,6 +96,13 @@ func setup(data map[string]string) {
 			drvs += l
 			x = append(x, d...)
 		}
+	}
+
+	if u, p := data[keyAV8DUser], data[keyAV8DPass]; u != "" && p != "" {
+		log.Print("got username and password, enables smsav8d")
+		d := smsav8d.New(u, p, cl)
+		drvs++
+		x = append(x, d)
 	}
 
 	if sg := data[keySendgridKey]; sg != "" {
