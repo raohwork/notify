@@ -19,7 +19,7 @@ import (
 	"github.com/raohwork/notify/drivers/sendgriddrv"
 	"github.com/raohwork/notify/drivers/tgdrv"
 	"github.com/raohwork/notify/model"
-	"github.com/raohwork/notify/model/mysqldrv"
+	"github.com/raohwork/notify/model/pgsqldrv"
 	"github.com/raohwork/notify/types"
 )
 
@@ -101,7 +101,7 @@ func setup(data map[string]string) {
 		}
 	}
 
-	dbdrv, err := mysqldrv.New(db, drvs, int(thread))
+	dbdrv, err := pgsqldrv.New(db, drvs, int(thread))
 	if err != nil {
 		log.Fatal("cannot initialize db driver: ", err)
 	}
