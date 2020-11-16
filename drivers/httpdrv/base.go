@@ -30,7 +30,9 @@ func DefaultValidator(code int, headers http.Header, body []byte) (err error) {
 // specified string, or error is returned
 func StringValidator(str string) (ret Validator) {
 	return func(code int, headers http.Header, body []byte) (err error) {
-		bytes.HasPrefix(body, []byte(str))
-		return errors.New("response is not begin with " + str)
+		if !bytes.HasPrefix(body, []byte(str)) {
+			return errors.New("response is not begin with " + str)
+		}
+		return
 	}
 }
