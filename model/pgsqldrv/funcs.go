@@ -36,7 +36,7 @@ func (d *drv) Delete(id string, ids []string) (err error) {
 
 func (d *drv) Resend(id string, max uint32) (err error) {
 	stmt := d.stmt(qResend)
-	_, err = stmt.Exec(id, max-1)
+	_, err = stmt.Exec(max-1, id)
 	return
 }
 

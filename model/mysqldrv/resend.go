@@ -10,7 +10,7 @@ const qResend = `UPDATE items SET tried=?, cur_state=0 WHERE notify_id=?`
 
 func (d *mysqldrv) Resend(id string, max uint32) (err error) {
 	stmt := d.Stmt(qResend)
-	res, err := stmt.Exec(id, max-1)
+	res, err := stmt.Exec(max-1, id)
 	if err != nil {
 		return
 	}
