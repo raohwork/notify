@@ -2,7 +2,7 @@
     "config": {
         "vendor-dir": "./phpvendor"
     },
-    "name": "raonwork/notify",
+    "name": "raohwork/notify",
     "description": "client library to send notify with github.com/raohwork/notify",
     "type": "library",
     "license": "MPL-2.0",
