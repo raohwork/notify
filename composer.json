@@ -1,0 +1,23 @@
+{
+    "config": {
+        "vendor-dir": "./phpvendor"
+    },
+    "name": "raonwork/notify",
+    "description": "client library to send notify with github.com/raohwork/notify",
+    "type": "library",
+    "license": "MPL-2.0",
+    "authors": [
+        {
+            "name": "Ronmi Ren",
+            "email": "ronmi.ren@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7"
+    },
+    "autoload": {
+        "psr-4": {
+            "RaohWork\\Notify\\": "php"
+        }
+    }
+}
