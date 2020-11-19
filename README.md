@@ -1,5 +1,7 @@
 Package notify provides simple way to create notify server.
 
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/raohwork/notify)](https://pkg.go.dev/github.com/raohwork/notify)
+
 Creating a server is easy as
 
 1. Select and initialize a db driver (see ./model/mysqldrv)
