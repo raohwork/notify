@@ -43,6 +43,8 @@ type Driver interface {
 	Send(ep string, content []byte) (resp []byte, err error)
 	// check the payload format. content is in json format
 	Verify(content []byte) (err error)
+	// check endpoint format.
+	CheckEP(ep string) (err error)
 }
 
 // Status defines response type of /status

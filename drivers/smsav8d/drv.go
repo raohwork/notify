@@ -12,10 +12,17 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 
 	"github.com/raohwork/notify/types"
 )
+
+var rePhone *regexp.Regexp
+
+func init() {
+	rePhone = regexp.MustCompile("^09[0-9]{8}$|^[+][1-9][0-9]+$")
+}
 
 // SMSAV8D is the type of the driver
 const SMSAV8D = "SMSAV8D"
@@ -56,6 +63,14 @@ func New(account, password string, hc *http.Client) (ret types.Driver) {
 
 func (d *drv) Type() (ret string) {
 	return SMSAV8D
+}
+
+func (d *drv) CheckEP(ep string) (err error) {
+	if !rePhone.MatchString(ep) {
+		err = errors.New("not a valid phone number")
+	}
+
+	return
 }
 
 func (d *drv) extract(data []byte) (ret *Message, err error) {

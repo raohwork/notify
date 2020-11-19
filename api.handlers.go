@@ -25,7 +25,7 @@ func (a *api) toItem(r *http.Request) (ret *model.Item, err error) {
 		return
 	}
 
-	if p.ID == "" || p.Driver == "" || p.Endpoint == "" {
+	if p.ID == "" || p.Driver == "" {
 		err = errors.New("missing required parameter")
 		return
 	}

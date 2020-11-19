@@ -137,6 +137,14 @@ func (t *tgTxt) Type() (ret string) {
 	return t.typ
 }
 
+func (t *tgTxt) CheckEP(ep string) (err error) {
+	if _, ok := t.dest[ep]; !ok {
+		err = errors.New("unsupported dest: " + ep)
+	}
+
+	return
+}
+
 func (t *tgTxt) Verify(data []byte) (err error) {
 	_, err = t.extract(data)
 	return

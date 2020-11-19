@@ -6,6 +6,7 @@ package httpdrv
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -38,6 +39,18 @@ func HTTPGet(cl *http.Client, v Validator) (ret types.Driver) {
 		cl: cl,
 		v:  v,
 	}
+}
+
+func (d *getDrv) CheckEP(ep string) (err error) {
+	u, err := url.Parse(ep)
+	if err != nil {
+		return
+	}
+
+	if len(u.Query()) > 0 {
+		err = errors.New("there cannot be any queries in url")
+	}
+	return
 }
 
 func (d *getDrv) Type() (ret string) {

@@ -43,6 +43,8 @@ func (d *drv) Type() (ret string) {
 	return Sendgrid
 }
 
+func (d *drv) CheckEP(ep string) (err error) { return }
+
 func (d *drv) Verify(data []byte) (err error) {
 	_, err = d.extract(data)
 	return

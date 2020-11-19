@@ -67,6 +67,11 @@ func (d *postDrv) Type() (ret string) {
 	return POST
 }
 
+func (d *postDrv) CheckEP(ep string) (err error) {
+	_, err = url.Parse(ep)
+	return
+}
+
 func (d *postDrv) Verify(buf []byte) (err error) {
 	_, err = d.extract(buf)
 	return
