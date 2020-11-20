@@ -40,6 +40,32 @@ func (s *suite) testSimpleOK(t *testing.T) {
 	}
 }
 
+func (s *suite) testSimpleResend(t *testing.T) {
+	const uri = "ok"
+	ch := make(chan string)
+	f := func(ep string, content []byte) (resp []byte, err error) {
+		go func() { ch <- ep }()
+		return []byte(ep), nil
+	}
+	api := s.start(f)
+	defer api.Shutdown(context.Background())
+
+	if err := s.cl.Resend("simple"); err != nil {
+		t.Fatal("cannot create notify: ", err)
+	}
+
+	res, ok := s.waitResult(5*time.Second, ch)
+	if !ok {
+		t.Fatal("notify is not sent in 5 seconds")
+	}
+
+	if res != uri {
+		t.Log("expect: ok")
+		t.Log("actual:", res)
+		t.Fatal("expected result")
+	}
+}
+
 func (s *suite) testSimpleDupe(t *testing.T) {
 	f := func(ep string, content []byte) (resp []byte, err error) {
 		return []byte(ep), nil

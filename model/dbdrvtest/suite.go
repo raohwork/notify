@@ -110,6 +110,7 @@ func (s *suite) Run(t *testing.T) {
 		t.SkipNow()
 	}
 	f(t.Run("SimpleOK", s.testSimpleOK))
+	f(t.Run("SimpleResend", s.testSimpleResend))
 	f(t.Run("SimpleDupe", s.testSimpleDupe))
 	f(t.Run("SimpleStatus", s.testSimpleStatus))
 	f(t.Run("SimpleResult", s.testSimpleResult))

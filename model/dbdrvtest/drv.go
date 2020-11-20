@@ -6,6 +6,8 @@ package dbdrvtest
 
 type drv func(ep string, content []byte) (resp []byte, err error)
 
+func (d drv) CheckEP(ep string) (err error) { return }
+
 func (d drv) Type() string { return drvType }
 
 func (d drv) Send(ep string, content []byte) (resp []byte, err error) {
