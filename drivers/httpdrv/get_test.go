@@ -13,7 +13,7 @@ import (
 )
 
 func TestGetExtract(t *testing.T) {
-	d := HTTPGet(http.DefaultClient)
+	d := HTTPGet(http.DefaultClient, nil)
 	data := []byte(`{"headers":{"X":["Y"]},"values":{"asd":["qwe"]}}`)
 
 	m, err := d.(*getDrv).extract(data)
@@ -42,7 +42,7 @@ func TestGetSend(t *testing.T) {
 	v := url.Values{}
 	v.Set("asd", "qwe")
 	data := []byte(`{"values":{"asd": ["qwe"]}}`)
-	d := HTTPGet(http.DefaultClient)
+	d := HTTPGet(http.DefaultClient, nil)
 	resp, err := d.Send(srv.URL+"/", data)
 	if err != nil {
 		t.Fatal("unexpected error: ", err)
