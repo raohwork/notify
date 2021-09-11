@@ -8,6 +8,8 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"net/mail"
+	"net/smtp"
 	"strconv"
 	"strings"
 	"time"
@@ -18,6 +20,7 @@ import (
 	"github.com/raohwork/notify/drivers/httpdrv"
 	"github.com/raohwork/notify/drivers/sendgriddrv"
 	"github.com/raohwork/notify/drivers/smsav8d"
+	"github.com/raohwork/notify/drivers/smtpdrv"
 	"github.com/raohwork/notify/drivers/tgdrv"
 	"github.com/raohwork/notify/model"
 	"github.com/raohwork/notify/model/pgsqldrv"
@@ -38,6 +41,12 @@ const (
 	keyThreads     = "THREADS"
 	keyAV8DUser    = "AV8D_USER"
 	keyAV8DPass    = "AV8D_PASS"
+	keySMTPUser    = "SMTP_USER"
+	keySMTPPass    = "SMTP_PASS"
+	keySMTPServer  = "SMTP_SERVER"
+	keySMTPAuth    = "SMTP_AUTH"
+	keySMTPTLS     = "SMTP_TLS"
+	keySMTPFrom    = "SMTP_FROM"
 )
 
 var bind string
@@ -56,6 +65,12 @@ func init() {
 	m.May(keyMaxTry, "retry at most these times", "6")
 	m.May(keyThreads, "goroutines to send notification", "10")
 	m.May(keyHTTPString, "string pass to httpdrv.StringValidator", "0000")
+	m.May(keySMTPUser, "smtp user name", "user")
+	m.May(keySMTPPass, "smtp password", "supersecret")
+	m.May(keySMTPServer, "smtp server address (host:port)", "server:587")
+	m.May(keySMTPTLS, "enable tls for smtp if not empty", "")
+	m.May(keySMTPAuth, "smtp auth method, can be PLAIN/CRAMMD5 (case insensitive)", "plain")
+	m.May(keySMTPFrom, "specify From header for smtp", "John Doe <john.doe@example.com>")
 }
 
 func setup(data map[string]string) {
@@ -113,7 +128,8 @@ func setup(data map[string]string) {
 		}
 	}
 
-	dbdrv, err := pgsqldrv.New(db, drvs, int(thread))
+	smtpdrvs := initSMTP(data)
+	dbdrv, err := pgsqldrv.New(db, drvs+len(smtpdrvs), int(thread))
 	if err != nil {
 		log.Fatal("cannot initialize db driver: ", err)
 	}
@@ -138,6 +154,50 @@ func setup(data map[string]string) {
 	log.Printf("HTTP callback is considered as success if response begins with %s", data[keyHTTPString])
 	for _, d := range x {
 		api.Register(d)
+	}
+	if len(smtpdrvs) > 0 {
+		for _, d := range smtpdrvs {
+			api.Register(d)
+		}
+		log.Printf("All SMTP settings are valid, SMTP drivers (plaintext and html) are enabled")
+	}
+}
+
+func initSMTP(data map[string]string) (ret []types.Driver) {
+	user, pass := data[keySMTPUser], data[keySMTPPass]
+	if user == "" || pass == "" {
+		return
+	}
+	server, auth := data[keySMTPServer], strings.ToLower(data[keySMTPAuth])
+	if server == "" {
+		return
+	}
+	arr := strings.Split(server, ":")
+	var a smtp.Auth
+	switch auth {
+	case "plain":
+		a = smtp.PlainAuth("", user, pass, arr[0])
+	case "crammd5":
+		a = smtp.CRAMMD5Auth(user, pass)
+	default:
+		return
+	}
+	useTLS := (data[keySMTPTLS] != "")
+	f := data[keySMTPFrom]
+	if f == "" {
+		return
+	}
+	from, err := mail.ParseAddress(f)
+	if err != nil {
+		return
+	}
+	tlsHost := ""
+	if useTLS {
+		tlsHost = arr[0]
+	}
+	return []types.Driver{
+		smtpdrv.New(*from, server, a, tlsHost),
+		smtpdrv.NewHTML(*from, server, a, tlsHost),
 	}
 }
 
